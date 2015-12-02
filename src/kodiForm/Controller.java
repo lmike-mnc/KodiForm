@@ -107,7 +107,7 @@ public class Controller implements Initializable {
         colResourceOrg.setCellValueFactory(cellData -> cellData.getValue().resourceProperty());
         chkPlayList.setSelected(true);
 
-        ctlMsg.appendText(Main.getWoringkdir() + "\n");
+        ctlMsg.appendText(Main.getWorkingkdir() + "\n");
     }
 
     private void openFile(File file) {
@@ -165,7 +165,7 @@ public class Controller implements Initializable {
         List<String> res = null;
         if (chkPlayList.isSelected()) {
             final FileChooser fileChooser = new FileChooser();
-            fileChooser.setInitialDirectory(new File(Main.getWoringkdir()));
+            fileChooser.setInitialDirectory(new File(Main.getWorkingkdir()));
             if (chkMovies.isSelected()) {
                 //fileChooser.setSelectedExtensionFilter(movFilter);
                 fileChooser.getExtensionFilters().add(movFilter);
@@ -177,10 +177,10 @@ public class Controller implements Initializable {
                     fileChooser.showOpenMultipleDialog(mainApp.getPrimaryStage());
             if (list != null) {
                 res = list.stream()
-                        .filter(f -> f.getAbsolutePath().startsWith(Main.getWoringkdir()))
+                        .filter(f -> f.getAbsolutePath().startsWith(Main.getWorkingkdir()))
                         .map(f -> {
                             String path = f.getAbsolutePath();
-                            return path.substring(path.indexOf(Main.getWoringkdir()) + Main.getWoringkdir().length());
+                            return path.substring(path.indexOf(Main.getWorkingkdir()) + Main.getWorkingkdir().length());
                         })
                         .collect(Collectors.toList());
                 //toArray(String[]::new);
@@ -193,14 +193,14 @@ public class Controller implements Initializable {
         } else {
             final DirectoryChooser directoryChooser =
                     new DirectoryChooser();
-            directoryChooser.setInitialDirectory(new File(Main.getWoringkdir()));
+            directoryChooser.setInitialDirectory(new File(Main.getWorkingkdir()));
             final File selectedDirectory =
                     directoryChooser.showDialog(mainApp.getPrimaryStage());
             if (selectedDirectory != null) {
                 res = new ArrayList<String>();
-                if (selectedDirectory.getAbsolutePath().startsWith(Main.getWoringkdir())) {
+                if (selectedDirectory.getAbsolutePath().startsWith(Main.getWorkingkdir())) {
                     String path = selectedDirectory.getAbsolutePath() + "/";
-                    res.add(path.substring(path.indexOf(Main.getWoringkdir()) + Main.getWoringkdir().length()));
+                    res.add(path.substring(path.indexOf(Main.getWorkingkdir()) + Main.getWorkingkdir().length()));
                 }
             }
         }

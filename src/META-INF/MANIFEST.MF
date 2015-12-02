@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Class-Path: aopalliance-1.0.jar ftplet-api-1.0.6.jar ftpserver-core-1.
+ 0.6.jar mina-core-2.0.4.jar spring-beans-2.5.5.jar spring-context-2.5
+ .5.jar spring-core-2.5.5.jar slf4j-log4j12-1.7.12.jar slf4j-api-1.7.1
+ 2.jar log4j-1.2.17.jar com.springsource.org.apache.commons.net-2.0.0.
+ jar commons-codec-1.9.jar commons-logging-1.2.jar httpclient-4.5.1.ja
+ r httpcore-4.4.3.jar sshj-0.14.0.jar bcpkix-jdk15on-1.51.jar bcprov-j
+ dk15on-1.51.jar jzlib-1.1.3.jar ecc-25519-java-1.0.1.jar slf4j-api-1.
+ 7.7.jar cling-core-2.0.1.jar seamless-http-1.1.0.jar seamless-util-1.
+ 1.0.jar seamless-xml-1.1.0.jar
+Main-Class: kodiForm.Main
+

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?language javascript?>
+<?import javafx.scene.*?>
+<?import javafx.scene.effect.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+
+<TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity"
+         prefHeight="650.0" prefWidth="802.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8"
+         xmlns:fx="http://javafx.com/fxml/1" fx:controller="kodiForm.Controller">
+    <tabs>
+        <Tab id="tabBasic" text="Basic">
+            <content>
+                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity"
+                            minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0">
+                    <children>
+                        <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity"
+                              minWidth="-Infinity" prefHeight="600.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0"
+                              AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                            <children>
+                                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+                                            minHeight="-Infinity" minWidth="-Infinity" prefHeight="336.0"
+                                            prefWidth="800.0" VBox.vgrow="SOMETIMES">
+                                    <children>
+                                        <HBox layoutX="199.0" layoutY="3.0" maxHeight="1.7976931348623157E308"
+                                              maxWidth="1.7976931348623157E308" prefHeight="347.0" prefWidth="802.0"
+                                              AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"
+                                              AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                            <children>
+                                                <AnchorPane HBox.hgrow="SOMETIMES">
+                                                    <children>
+                                                        <TableView id="ctlDevices" fx:id="ctlDevices"
+                                                                   maxHeight="1.7976931348623157E308"
+                                                                   maxWidth="1.7976931348623157E308"
+                                                                   minHeight="-Infinity" minWidth="-Infinity"
+                                                                   prefHeight="310.0" prefWidth="487.0"
+                                                                   AnchorPane.bottomAnchor="66.0"
+                                                                   AnchorPane.leftAnchor="0.0"
+                                                                   AnchorPane.rightAnchor="0.0"
+                                                                   AnchorPane.topAnchor="0.0">
+                                                            <columns>
+                                                                <TableColumn id="colDev1" fx:id="colName"
+                                                                             minWidth="-Infinity" prefWidth="150.0"
+                                                                             text="Name"/>
+                                                                <TableColumn id="colDev2" fx:id="colURI"
+                                                                             minWidth="-Infinity" prefWidth="150.0"
+                                                                             text="URI"/>
+                                                                <TableColumn fx:id="colResource" minWidth="-Infinity"
+                                                                             prefWidth="250.0" text="Resource"/>
+                                                            </columns>
+                                                            <columnResizePolicy>
+                                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                                            </columnResizePolicy>
+                                                        </TableView>
+                                                        <Button id="btnPlayAll" fx:id="btnPlayAll" layoutX="15.0"
+                                                                layoutY="314.0" maxHeight="-Infinity"
+                                                                maxWidth="-Infinity" minHeight="-Infinity"
+                                                                minWidth="-Infinity" mnemonicParsing="false"
+                                                                onAction="#playAll" prefHeight="25.0" prefWidth="65.0"
+                                                                text="PalyAll" AnchorPane.bottomAnchor="37.0"
+                                                                AnchorPane.leftAnchor="15.0"/>
+                                                        <Button id="btnPlay" fx:id="btnPlay" layoutX="85.0"
+                                                                layoutY="314.0" maxHeight="-Infinity"
+                                                                maxWidth="-Infinity" minHeight="-Infinity"
+                                                                minWidth="-Infinity" mnemonicParsing="false"
+                                                                onAction="#play" prefHeight="25.0" prefWidth="65.0"
+                                                                text="Play" AnchorPane.bottomAnchor="37.0"
+                                                                AnchorPane.leftAnchor="85.0"/>
+                                                        <Button id="btnStop" fx:id="btnStop" layoutX="155.0"
+                                                                layoutY="314.0" maxHeight="-Infinity"
+                                                                maxWidth="-Infinity" minHeight="-Infinity"
+                                                                minWidth="-Infinity" mnemonicParsing="false"
+                                                                onAction="#stop" prefHeight="25.0" prefWidth="65.0"
+                                                                text="Stop" AnchorPane.bottomAnchor="37.0"
+                                                                AnchorPane.leftAnchor="155.0"/>
+                                                        <Button id="btnWakeUp" fx:id="btnWakeUp" layoutX="264.0"
+                                                                layoutY="313.0" maxHeight="-Infinity"
+                                                                maxWidth="-Infinity" minHeight="-Infinity"
+                                                                minWidth="-Infinity" mnemonicParsing="false"
+                                                                onAction="#wakeUp" prefHeight="25.0" prefWidth="76.0"
+                                                                text="WakeUp" AnchorPane.bottomAnchor="38.0"
+                                                                AnchorPane.leftAnchor="264.0"/>
+                                                        <Button id="btReboot" fx:id="btnReboot" layoutX="344.0"
+                                                                layoutY="313.0" maxHeight="-Infinity"
+                                                                maxWidth="-Infinity" minHeight="-Infinity"
+                                                                minWidth="-Infinity" mnemonicParsing="false"
+                                                                onAction="#reboot" prefHeight="25.0" prefWidth="68.0"
+                                                                text="Reboot" AnchorPane.bottomAnchor="38.0"
+                                                                AnchorPane.leftAnchor="344.0"/>
+                                                        <Button id="btnSave" fx:id="btnSave" layoutX="416.0"
+                                                                layoutY="313.0" maxHeight="-Infinity"
+                                                                maxWidth="-Infinity" minHeight="-Infinity"
+                                                                minWidth="-Infinity" mnemonicParsing="false"
+                                                                onAction="#save" prefHeight="25.0" prefWidth="55.0"
+                                                                text="Save" AnchorPane.bottomAnchor="38.0"
+                                                                AnchorPane.leftAnchor="416.0"/>
+                                                        <Button id="btnCheck" fx:id="btnCheck" layoutX="344.0"
+                                                                layoutY="345.0" maxHeight="-Infinity"
+                                                                maxWidth="-Infinity" mnemonicParsing="false"
+                                                                onAction="#check" prefHeight="25.0" prefWidth="61.0"
+                                                                text="Check" AnchorPane.bottomAnchor="6.0"
+                                                                AnchorPane.leftAnchor="344.0"/>
+                                                    </children>
+                                                </AnchorPane>
+                                                <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity"
+                                                            minHeight="-Infinity" minWidth="-Infinity"
+                                                            prefHeight="310.0" prefWidth="45.0" HBox.hgrow="NEVER">
+                                                    <children>
+                                                        <Button id="btnAssign" fx:id="btnAssign" layoutX="3.0"
+                                                                layoutY="178.0" mnemonicParsing="false"
+                                                                onAction="#assign" prefHeight="25.0" prefWidth="40.0"
+                                                                text="&lt;&lt;"/>
+                                                        <Button id="btnAdd" fx:id="btnAdd" layoutX="3.0" layoutY="52.0"
+                                                                mnemonicParsing="false" onAction="#add"
+                                                                prefHeight="25.0" prefWidth="40.0" text="+"/>
+                                                        <Button id="btnDel" fx:id="btnDel" layoutX="3.0" layoutY="109.0"
+                                                                mnemonicParsing="false" onAction="#del"
+                                                                prefHeight="25.0" prefWidth="40.0" text="-"/>
+                                                    </children>
+                                                </AnchorPane>
+                                                <AnchorPane HBox.hgrow="SOMETIMES">
+                                                    <children>
+                                                        <TableView id="ctlResources" fx:id="ctlResources"
+                                                                   maxHeight="1.7976931348623157E308"
+                                                                   maxWidth="1.7976931348623157E308"
+                                                                   minHeight="-Infinity" minWidth="-Infinity"
+                                                                   prefHeight="310.0" prefWidth="268.0"
+                                                                   AnchorPane.bottomAnchor="70.0"
+                                                                   AnchorPane.leftAnchor="0.0"
+                                                                   AnchorPane.rightAnchor="0.0"
+                                                                   AnchorPane.topAnchor="0.0">
+                                                            <columns>
+                                                                <TableColumn id="colRes1" fx:id="colResourceOrg"
+                                                                             maxWidth="1.7976931348623157E308"
+                                                                             minWidth="-Infinity" prefWidth="250.0"
+                                                                             text="Resource"/>
+                                                            </columns>
+                                                            <columnResizePolicy>
+                                                                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                                                            </columnResizePolicy>
+                                                        </TableView>
+                                                        <CheckBox id="chkPlayList" fx:id="chkPlayList" layoutX="14.0"
+                                                                  layoutY="317.0" mnemonicParsing="false"
+                                                                  onAction="#setChkPlayList" text="PlayList"
+                                                                  AnchorPane.bottomAnchor="41.0"
+                                                                  AnchorPane.leftAnchor="14.0"
+                                                                  AnchorPane.rightAnchor="180.0"/>
+                                                        <CheckBox id="chkMovies" fx:id="chkMovies" layoutX="108.0"
+                                                                  layoutY="317.0" mnemonicParsing="false"
+                                                                  onAction="#setChkMovies" text="Movies"
+                                                                  AnchorPane.bottomAnchor="41.0"
+                                                                  AnchorPane.leftAnchor="108.0"
+                                                                  AnchorPane.rightAnchor="86.0"/>
+                                                    </children>
+                                                </AnchorPane>
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
+                                            </padding>
+                                        </HBox>
+                                    </children>
+                                </AnchorPane>
+                                <AnchorPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+                                            minHeight="-Infinity" minWidth="-Infinity" prefHeight="192.0"
+                                            prefWidth="800.0" VBox.vgrow="SOMETIMES">
+                                    <children>
+                                        <TextArea id="ctlMsg" fx:id="ctlMsg" editable="false"
+                                                  maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+                                                  minHeight="-Infinity" minWidth="-Infinity" prefHeight="192.0"
+                                                  prefWidth="800.0" AnchorPane.bottomAnchor="0.0"
+                                                  AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                                                  AnchorPane.topAnchor="0.0"/>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
+                                    </padding>
+                                </AnchorPane>
+                            </children>
+                        </VBox>
+                    </children>
+                </AnchorPane>
+            </content>
+        </Tab>
+        <Tab id="tabAdvanced" text="Advanced">
+            <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0"/>
+            </content>
+        </Tab>
+    </tabs>
+</TabPane>

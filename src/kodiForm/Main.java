@@ -27,7 +27,7 @@ public class Main extends Application {
     private static final String workingdir = Paths.get(".").toAbsolutePath().normalize().toString();
     private static Controller controller;
 
-    public String getWoringkdir() {
+    public static String getWoringkdir() {
         return workingdir;
     }
 /*

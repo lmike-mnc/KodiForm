@@ -256,7 +256,7 @@ public class Controller implements Initializable {
     }
 
     public void play() {
-        ctlMsg.setText("Trying 1 to playing...\n");
+        ctlMsg.setText("Trying to playing...\n");
         List<Callable<String>> callables = getSelectedDev().stream()
                 .filter(d -> !d.getDevResource().isEmpty())
                 .map(d -> {

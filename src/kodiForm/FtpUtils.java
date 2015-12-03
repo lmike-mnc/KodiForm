@@ -24,8 +24,8 @@ import java.util.List;
 class FtpUtils {
     private static final String resPath = "./res";
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
-    private static final List<Authority> ADMIN_AUTHORITIES = new ArrayList();
-    public static final List<Authority> ANON_AUTHORITIES = new ArrayList();
+    private static final List<Authority> ADMIN_AUTHORITIES = new ArrayList<>();
+    public static final List<Authority> ANON_AUTHORITIES = new ArrayList<>();
     private static final FtpServerFactory serverFactory = new FtpServerFactory();
     static final String ANON_USER = "anonymous";
 

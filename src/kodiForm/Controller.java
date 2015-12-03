@@ -577,7 +577,7 @@ public class Controller implements Initializable {
                     LOG.info("Waiting for processing...");
                     listener.checkSsh();
                     LOG.info("Timeout Scan {} ms...", TIMEOUT_SCAN);
-                    Thread.currentThread().sleep(TIMEOUT_SCAN);
+                    Thread.sleep(TIMEOUT_SCAN);
 //                                    {Launcher.main(new String[]{""});}
 //                                Thread.currentThread().sleep(5000);
                 }

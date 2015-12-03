@@ -169,7 +169,7 @@ class Ping {
     //
     static class Printer
             extends Thread {
-        final LinkedList pending = new LinkedList();
+        final LinkedList<Target> pending = new LinkedList<>();
 
         Printer() {
             setName("Printer");
@@ -213,7 +213,7 @@ class Ping {
         // register a channel with the selector while the connector thread is
         // blocked in the selector then we will block.
         //
-        final LinkedList pending = new LinkedList();
+        final LinkedList<Target> pending = new LinkedList<>();
 
         Connector(Printer pr) throws IOException {
             printer = pr;
@@ -412,7 +412,7 @@ class Ping {
         Connector connector = new Connector(printer);
         connector.start();
         List<Target> filtered = null;
-        LinkedList<Target> targets = new LinkedList();
+        LinkedList<Target> targets = new LinkedList<>();
         try {
 
             // Create the targets and add them to the connector

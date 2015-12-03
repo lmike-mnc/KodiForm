@@ -2,6 +2,7 @@ package kodiForm;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.MultipleSelectionModel;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
@@ -11,7 +12,6 @@ import javafx.scene.control.TableView;
  */
 public class CtlUtils {
     private static NullTableViewSelectionModel nullSelection = null;
-
     public static NullTableViewSelectionModel disabledSelection(TableView ctl) {
         if (nullSelection == null) nullSelection = new NullTableViewSelectionModel(ctl);
         return nullSelection;

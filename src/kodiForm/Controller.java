@@ -17,6 +17,8 @@ import java.net.SocketException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 
 public class Controller implements Initializable {
@@ -29,6 +31,7 @@ public class Controller implements Initializable {
     private static final String MOV_MATCHES = "(?i).+\\.(avi|m4v)(;.+)?";
     private static final String IMG_MATCHES = "(?i).+\\.(jpg|png)(;.+)?";
     private static final String PL_MATCHES = "(?i).+\\.(avi|m4v|jpg|png)(;.+)?";
+    private static final Preferences savedResources = Preferences.userNodeForPackage(new Throwable().getStackTrace()[0].getClass());
 
     @FXML
     private Button btnAdd;
@@ -69,6 +72,8 @@ public class Controller implements Initializable {
     @FXML
     private TextArea ctlMsg;
 
+    private TableView.TableViewSelectionModel defmode;
+
     private Thread thPing; //search hosts on network by ping an UPnPScan
     private Thread thCheck; //check host availability (create "List" for thLaunch)
     private Thread thLaunch; //launch "task" for "List" elements
@@ -99,9 +104,11 @@ public class Controller implements Initializable {
         btnCheck.setOnAction(event->check());
         */
         ctlDevices.getSelectionModel().setSelectionMode(javafx.scene.control.SelectionMode.MULTIPLE);
+        //device columns
         colName.setCellValueFactory(cellData -> cellData.getValue().devNameProperty());
         colURI.setCellValueFactory(cellData -> cellData.getValue().devURIProperty());
         colResource.setCellValueFactory(cellData -> cellData.getValue().devResourceProperty());
+        defmode = ctlDevices.getSelectionModel();
 
         ctlResources.getSelectionModel().setSelectionMode(javafx.scene.control.SelectionMode.MULTIPLE);
         colResourceOrg.setCellValueFactory(cellData -> cellData.getValue().resourceProperty());
@@ -423,6 +430,12 @@ public class Controller implements Initializable {
 
     @FXML
     void save() {
+        mainApp.getDeviceData().forEach(d ->
+                {
+                    savedResources.put(d.getDevName(), d.getDevResource());
+                }
+        );
+
     }
 
     @FXML
@@ -628,17 +641,27 @@ public class Controller implements Initializable {
         };
         serviceSch.scheduleWithFixedDelay(scanTask, 0, TIMEOUT_SCAN, TimeUnit.MILLISECONDS);
 */
-
+        try {
+            loadDevResources();
+        } catch (BackingStoreException e) {
+            LOG.error("Resource load failed!", e);//.printStackTrace();
+        }
         thPing = new Thread(() -> {
             Thread.currentThread().setName("Ping");
             try {
                 while (true) {
                     // my code goes here
 //                    upnpService.getControlPoint().search(stAllHeader);//broadcast UPnP
+
+                    //prevent from selecting devices (before checking)
+                    ctlDevices.getSelectionModel().clearSelection();
+//                    ctlDevices.setSelectionModel(CtlUtils.disabledSelection(ctlDevices));
                     ping.pingIface(ifaceNum, TIMEOUT_PING);
                     //launch result processing
                     LOG.info("Waiting for processing...");
                     listener.checkSsh();
+                    //enable selection after checking
+//                    ctlDevices.setSelectionModel(defmode);
                     LOG.info("Timeout Scan {} ms...", TIMEOUT_SCAN);
                     Thread.sleep(TIMEOUT_SCAN);
                 }
@@ -652,6 +675,14 @@ public class Controller implements Initializable {
         );
         thPing.setDaemon(true);
         thPing.start();
+    }
+
+    private void loadDevResources() throws BackingStoreException {
+        ObservableList<Device> list = mainApp.getDeviceData();
+        Arrays.asList(savedResources.keys())
+                .forEach(d -> {
+                    list.add(new Device(d, null, savedResources.get(d, "")));
+                });
     }
 
     /**

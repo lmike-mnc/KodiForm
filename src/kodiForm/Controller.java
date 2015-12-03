@@ -316,6 +316,42 @@ public class Controller implements Initializable {
             ctlMsg.appendText(s + "\n");
         }
 */
+        execInPool(callables);
+    }
+
+    void playJson(String json, String[][] replacement) {
+        List<Callable<String>> callables = getSelectedDev().stream()
+                .filter(d -> !d.getDevResource().isEmpty())
+                .map(d -> {
+                    Callable<String> ret = null;
+                    try {
+                        String sResources = d.getDevResource();
+                        String saddr = null;
+                        saddr = NetUtils.accessibleAddresses(d.getDevURI()).get(0);
+                        LOG.info("Resources:{}", d.getDevResource());
+
+                        String resURI = Launcher.FTP_URI + saddr + ":" + Main.FTP_PORT;
+
+                        LOG.info("accessible address:{}", saddr);
+                        String plid = sResources.matches(MOV_MATCHES) ? JsonUtils.PLID_MOV : JsonUtils.PLID_PIC;
+
+                        final String finalSaddr = resURI + "$URI";//saddr;
+                        ret = Launcher
+                                .callableRequest(d.getDevURI() + ((JsonUtils.HTTP_PORT.length() > 0) ? (":" + JsonUtils.HTTP_PORT) : "")
+                                        , Launcher.HTTP_PROTO
+                                        , Launcher.JSONRPC
+                                        , json);
+
+                    } catch (SocketException e) {
+                        e.printStackTrace();
+                    }
+                    return ret;
+                }).collect(Collectors.toList());
+        ;
+        execInPool(callables);
+    }
+
+    private void execInPool(List<Callable<String>> callables) {
         try {
             executor.invokeAll(callables
                     //, 1000, TimeUnit.MILLISECONDS
@@ -326,15 +362,10 @@ public class Controller implements Initializable {
                             return future.get();
                         } catch (InterruptedException | ExecutionException e) {
                             future.cancel(true);
-                            return null;
-//                            throw new IllegalStateException(e);
-//                            e.printStackTrace();
+                            return "Interrupted";
                         }
                     })
-                    .forEach(ctlMsg::appendText
-                            //System.out::println
-                    )
-            ;
+                    .forEach(ctlMsg::appendText);
         } catch (InterruptedException e) {
             //e.printStackTrace();
         }
@@ -342,11 +373,31 @@ public class Controller implements Initializable {
 
     @FXML
     void stop() {
+        LOG.info("Stopping...");
+        ctlMsg.setText("Stopping...");
+        List<Callable<String>> callables = getSelectedDev().stream()
+                .filter(d -> !d.getDevResource().isEmpty())
+                .map(d -> {
+                    Callable<String> ret = null;
+                    String sResources = d.getDevResource();
+                    String plid = sResources.matches(MOV_MATCHES) ? JsonUtils.PLID_MOV : JsonUtils.PLID_PIC;
+
+                    ret = Launcher
+                            .callableRequest(d.getDevURI() + ((JsonUtils.HTTP_PORT.length() > 0) ? (":" + JsonUtils.HTTP_PORT) : "")
+                                    , Launcher.HTTP_PROTO
+                                    , Launcher.JSONRPC
+                                    , JsonUtils.JSON_STOP.replace("$PLID", plid));
+
+                    return ret;
+                }).collect(Collectors.toList());
+        execInPool(callables);
     }
 
     @FXML
     void wakeUp() {
-        getSelectedDev().forEach(d -> {
+        getSelectedDev().stream()
+                .filter(d -> !d.getDevResource().isEmpty())
+                .forEach(d -> {
                     try {
                         String res = new SshJClient().launch(d.getDevURI(), SshJClient.CMD_WAKEUP, Main.DEF_USER);
                         LOG.info("Result:{}", res);
@@ -377,6 +428,23 @@ public class Controller implements Initializable {
     @FXML
     void check() {
         LOG.info("Checking...");
+        ctlMsg.setText("Checking...");
+        List<Callable<String>> callables = getSelectedDev().stream()
+                .filter(d -> !d.getDevResource().isEmpty())
+                .map(d -> {
+                    Callable<String> ret = null;
+                    String sResources = d.getDevResource();
+                    String plid = sResources.matches(MOV_MATCHES) ? JsonUtils.PLID_MOV : JsonUtils.PLID_PIC;
+
+                    ret = Launcher
+                            .callableRequest(d.getDevURI() + ((JsonUtils.HTTP_PORT.length() > 0) ? (":" + JsonUtils.HTTP_PORT) : "")
+                                    , Launcher.HTTP_PROTO
+                                    , Launcher.JSONRPC
+                                    , JsonUtils.JSON_PL_STATUS.replace("$id", "1").replace("$PLID", plid));
+
+                    return ret;
+                }).collect(Collectors.toList());
+        execInPool(callables);
     }
 
     @FXML

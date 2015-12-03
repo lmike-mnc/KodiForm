@@ -17,7 +17,7 @@ import java.util.prefs.Preferences;
 
 import static kodiForm.FtpUtils.*;
 
-class Main extends Application {
+public class Main extends Application {
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
     public static String DEF_USER = "root";
     public static String FTP_PORT = "1680";//CarbonCopy port - often it's free and not blocked (on Windows)

@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.util.List;
 //https://github.com/sparsick/comparison-java-ssh-libs/blob/master/src/main/java/com/github/sparsick/ssh4j/SshClient.java
 
-public interface SshClient extends AutoCloseable {
+interface SshClient extends AutoCloseable {
 
     void authUserPassword(String user, String password);
 

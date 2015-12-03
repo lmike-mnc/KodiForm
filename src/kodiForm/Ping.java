@@ -85,28 +85,32 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class Ping {
+class Ping {
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
     // The default daytime port
     static int DAYTIME_PORT = 13;
     // The default http port
     static int HTTP_PORT = 80;
     // the default ssh port
-    static int SSH_PORT = 22;
+    private static final int SSH_PORT = 22;
     // The port we'll actually use
-    static int port = SSH_PORT;
-    static short TIMEOUT_SELECT = 10;//10ms timeout for nio select
-    static boolean logConnect = true;
+    private static int port = SSH_PORT;
+    private static final short TIMEOUT_SELECT = 10;//10ms timeout for nio select
+    private static boolean logConnect = true;
 
-    static final Broker broker = new Broker();
-    private static final List<InetSocketAddress> list = Collections.synchronizedList(new ArrayList<InetSocketAddress>());
+    private final Broker broker;
+    private static final List<InetSocketAddress> list = Collections.synchronizedList(new ArrayList<>());
 
-    static void add2broker(Object o) {
+    public Ping() {
+        broker = new Broker();
+    }
+
+    void add2broker(Object o) {
         broker.add(o);
         logConnect = false;
     }
 
-    static void removeFromBroker(Object o) {
+    void removeFromBroker(Object o) {
         broker.remove(o);
     }
 
@@ -132,7 +136,7 @@ public class Ping {
             }
         }
 
-        void show() throws IOException {
+        void show() {
             String result;
             if (connectFinish != 0) {
                 result = Long.toString(connectFinish - connectStart) + "ms";
@@ -165,7 +169,7 @@ public class Ping {
     //
     static class Printer
             extends Thread {
-        LinkedList pending = new LinkedList();
+        final LinkedList pending = new LinkedList();
 
         Printer() {
             setName("Printer");
@@ -181,7 +185,7 @@ public class Ping {
 
         public void run() {
             try {
-                for (; ; ) {
+                while (true) {
                     Target t = null;
                     synchronized (pending) {
                         while (pending.size() == 0)
@@ -190,8 +194,7 @@ public class Ping {
                     }
                     t.show();
                 }
-            } catch (InterruptedException | IOException x) {
-                return;
+            } catch (InterruptedException x) {
             }
         }
 
@@ -204,15 +207,15 @@ public class Ping {
     class Connector
             extends Thread {
         Selector sel;
-        Printer printer;
+        final Printer printer;
 
         // List of pending targets.  We use this pinglist because if we try to
         // register a channel with the selector while the connector thread is
         // blocked in the selector then we will block.
         //
-        LinkedList pending = new LinkedList();
+        final LinkedList pending = new LinkedList();
 
-        Connector(Printer pr) throws IOException, InterruptedException {
+        Connector(Printer pr) throws IOException {
             printer = pr;
             sel = Selector.open();
             setName("Connector");
@@ -507,12 +510,12 @@ public class Ping {
                 }
             }
         }
-        add2broker(new My());
         int firstArg = -1;
         if (Pattern.matches("[0-9]+", args[0])) {
             firstArg = Integer.parseInt(args[0]);
         }
         Ping ping = new Ping();
+        ping.add2broker(new My());
         ping.pingIface(firstArg, 500);
     }
 

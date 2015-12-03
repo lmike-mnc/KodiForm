@@ -6,7 +6,7 @@ import javafx.beans.property.StringProperty;
 /**
  * Created by mike on 28.10.15.
  */
-public class Device {
+class Device {
     private final StringProperty devName;
     private final StringProperty devURI;
     private final StringProperty devResource;

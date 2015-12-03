@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  * Created by mike on 27.11.15.
  */
 //http://winterbe.com/posts/2015/04/07/java8-concurrency-tutorial-thread-executor-examples/
-public class Launcher {
+class Launcher {
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
     public static final String JSONRPC = "/jsonrpc";
     public static final String HTTP_PROTO = "http";
@@ -37,17 +37,16 @@ public class Launcher {
     static Callable<String> callableRequestList(String host, String protocol, String url, List<String> list) {
         return () -> {
             String res = null;
-            return list.stream().map(d -> {
-                return JsonUtils.postRequest(host, protocol, url, d);
-            }).collect(Collectors.joining("\n"));
+            return list.stream().map(d -> JsonUtils.postRequest(host, protocol, url, d)).collect(Collectors.joining("\n"));
 
         };
     }
 
     public static List<Callable<String>> callablesJson(String host, List<String> uriList, String... params) {
-        List<Callable<String>> callables = Arrays.asList(callableJsonPL(host, uriList, params)
-        );
-        return callables;
+        return
+                Arrays.asList(
+                        callableJsonPL(host, uriList, params)
+                );
     }
 
     public static Callable<String> callableJsonPL(String host, List<String> uriList, String... params) {
@@ -79,12 +78,10 @@ public class Launcher {
         final String finalPlid = plid;
         List<String> list = uriList.stream()
                 .map(e ->
-                {
-                    return JsonUtils.JSON_PL_ADD
-                            .replace("$PLID", finalPlid)
-                            .replace("$URI", e)
-                            .replace("$id", String.valueOf(cnt.incrementAndGet()));
-                })
+                        JsonUtils.JSON_PL_ADD
+                                .replace("$PLID", finalPlid)
+                                .replace("$URI", e)
+                                .replace("$id", String.valueOf(cnt.incrementAndGet())))
                 .collect(Collectors.toList());
         list.add(0, JsonUtils.JSON_PL_CLEAR
                 .replace("$PLID", plid)
@@ -109,9 +106,6 @@ public class Launcher {
                 callable("task2", 1),
                 callable("task3", 3));
 */
-        System.out.println("vv.avi;tt.png".matches("(?i).+\\.(avi|m4v|jpg|png)(;.+)?"));
-
-        if (true) return;
         LOG.info("*push json");
 /*
         List<Callable<String>> callables = Arrays.asList(
@@ -162,7 +156,7 @@ public class Launcher {
         //executor.shutdownNow();
     }
 
-    BigDecimal calculate() {
+    private BigDecimal calculate() {
         return new BigDecimal(0);
     }
 

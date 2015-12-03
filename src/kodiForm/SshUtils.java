@@ -20,9 +20,8 @@ import java.util.stream.Collectors;
  */
 // command to restart kodi: "systemctl restart kodi"
 // command to pinglist external storage dir: "mount | grep /media/|head -1 | cut -d ' ' -f 3-| { read var; echo ${var%%' type'*}; }"
-public class SshUtils {
+class SshUtils {
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
-    ;
 
     public static String launch(String host, String command, String user, String... auth) throws IOException {
         SSHClient ssh = new SSHClient();
@@ -79,7 +78,7 @@ public class SshUtils {
             }
             LOG.info("Result: " + result);
         } catch (IOException e) {
-            LOG.error(Arrays.asList(e.getStackTrace()).stream().map(el -> el.toString()).collect(Collectors.joining("\n")));
+            LOG.error(Arrays.asList(e.getStackTrace()).stream().map(StackTraceElement::toString).collect(Collectors.joining("\n")));
         }
     }
 }

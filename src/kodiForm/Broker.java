@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 
-public class Broker {
-    private final Map<Class, List<SubscriberInfo>> map = new LinkedHashMap<Class, List<SubscriberInfo>>();
+class Broker {
+    private final Map<Class, List<SubscriberInfo>> map = new LinkedHashMap<>();
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
 
     public void add(Object o) {
@@ -22,7 +22,7 @@ public class Broker {
             Class subscribeTo = parameterTypes[0];
             List<SubscriberInfo> subscriberInfos = map.get(subscribeTo);
             if (subscriberInfos == null)
-                map.put(subscribeTo, subscriberInfos = new ArrayList<SubscriberInfo>());
+                map.put(subscribeTo, subscriberInfos = new ArrayList<>());
             subscriberInfos.add(new SubscriberInfo(method, o));
         }
     }

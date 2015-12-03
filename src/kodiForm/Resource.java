@@ -6,7 +6,7 @@ import javafx.beans.property.StringProperty;
 /**
  * Created by mike on 28.10.15.
  */
-public class Resource {
+class Resource {
     private final StringProperty resource;
 
     public Resource(String resource) {

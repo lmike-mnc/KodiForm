@@ -6,7 +6,7 @@ import java.util.StringJoiner;
 /**
  * Created by mike on 29.10.15.
  */
-public class Utils {
+class Utils {
     public static String runSystemCommand(String command) {
         StringJoiner joiner = new StringJoiner("\n");
         try {

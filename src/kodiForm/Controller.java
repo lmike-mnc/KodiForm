@@ -63,7 +63,7 @@ public class Controller implements Initializable {
     @FXML
     private TableColumn<Device, String> colResource;
     @FXML
-    private TableView ctlResources;
+    private TableView<Resource> ctlResources;
     @FXML
     private TableColumn<Resource, String> colResourceOrg;
     @FXML
@@ -72,10 +72,10 @@ public class Controller implements Initializable {
     private Thread thPing; //search hosts on network by ping an UPnPScan
     private Thread thCheck; //check host availability (create "List" for thLaunch)
     private Thread thLaunch; //launch "task" for "List" elements
-    Ping ping = new Ping();
-    PingListener listener = new PingListener();
+    private final Ping ping = new Ping();
+    final PingListener listener = new PingListener();
     //http://habrahabr.ru/post/116363/
-    ScheduledExecutorService serviceSch = Executors.newSingleThreadScheduledExecutor();
+    private final ScheduledExecutorService serviceSch = Executors.newSingleThreadScheduledExecutor();
     //    ExecutorService service = Executors.newCachedThreadPool();//Executors.newSingleThreadExecutor(); //.newFixedThreadPool(100);
     /*
             new ThreadPoolExecutor(5, Integer.MAX_VALUE,
@@ -89,7 +89,7 @@ public class Controller implements Initializable {
     private int ifaceNum = -1;
     private UpnpService upnpService;
     private Runnable scanTask;
-    private ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService executor = Executors.newCachedThreadPool();
 //https://docs.oracle.com/javase/tutorial/collections/implementations/wrapper.html
 
     @Override
@@ -117,7 +117,7 @@ public class Controller implements Initializable {
         return ctlDevices.getSelectionModel().getSelectedItems();
     }
 
-    public ObservableList<Device> getSelectedRes() {
+    private ObservableList<Resource> getSelectedRes() {
         return ctlResources.getSelectionModel().getSelectedItems();
     }
 
@@ -197,7 +197,7 @@ public class Controller implements Initializable {
             final File selectedDirectory =
                     directoryChooser.showDialog(mainApp.getPrimaryStage());
             if (selectedDirectory != null) {
-                res = new ArrayList<String>();
+                res = new ArrayList<>();
                 if (selectedDirectory.getAbsolutePath().startsWith(Main.getWorkingkdir())) {
                     String path = selectedDirectory.getAbsolutePath() + "/";
                     res.add(path.substring(path.indexOf(Main.getWorkingkdir()) + Main.getWorkingkdir().length()));
@@ -212,7 +212,7 @@ public class Controller implements Initializable {
         //mainApp.getDeviceData().add(new Device("Castrol-002","http://Castrol-002","/Public/Picturies"));
     }
 
-    public void alertInfo(String header, String msg) {
+    private void alertInfo(String header, String msg) {
         //stackoverflow.com/questions/26341152/controlsfx-dialogs-deprecated-for-what
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.initStyle(StageStyle.UTILITY);
@@ -222,11 +222,13 @@ public class Controller implements Initializable {
         alert.showAndWait();
     }
 
-    public void del() {
+    @FXML
+    void del() {
         mainApp.getResourceData().removeAll(getSelectedRes());
     }
 
-    public void assign() {
+    @FXML
+    void assign() {
         LOG.info("Assigning...");
         ObservableList<Device> devices = getSelectedDev();
         ArrayList<String> list = getSelectedResString();
@@ -249,13 +251,15 @@ public class Controller implements Initializable {
                 });
     }
 
-    public void playAll() {
+    @FXML
+    void playAll() {
         ctlDevices.getSelectionModel().selectAll();
         play();
         ctlDevices.getSelectionModel().clearSelection();
     }
 
-    public void play() {
+    @FXML
+    void play() {
         ctlMsg.setText("Trying to playing...\n");
         List<Callable<String>> callables = getSelectedDev().stream()
                 .filter(d -> !d.getDevResource().isEmpty())
@@ -267,7 +271,7 @@ public class Controller implements Initializable {
                         saddr = NetUtils.accessibleAddresses(d.getDevURI()).get(0);
                         LOG.info("Resources:{}", d.getDevResource());
 
-                        String resURI = Launcher.FTP_URI + saddr + ":" + mainApp.FTP_PORT;
+                        String resURI = Launcher.FTP_URI + saddr + ":" + Main.FTP_PORT;
 
                         LOG.info("accessible address:{}", saddr);
                         String plid = sResources.matches(MOV_MATCHES) ? JsonUtils.PLID_MOV : JsonUtils.PLID_PIC;
@@ -333,18 +337,18 @@ public class Controller implements Initializable {
             ;
         } catch (InterruptedException e) {
             //e.printStackTrace();
-        } finally {
         }
-
     }
 
-    public void stop() {
+    @FXML
+    void stop() {
     }
 
-    public void wakeUp() {
+    @FXML
+    void wakeUp() {
         getSelectedDev().forEach(d -> {
                     try {
-                        String res = new SshJClient().launch(d.getDevURI(), SshJClient.CMD_WAKEUP, mainApp.DEF_USER);
+                        String res = new SshJClient().launch(d.getDevURI(), SshJClient.CMD_WAKEUP, Main.DEF_USER);
                         LOG.info("Result:{}", res);
                     } catch (IOException e) {
                         LOG.error("IO error!", e);//.printStackTrace();
@@ -353,10 +357,11 @@ public class Controller implements Initializable {
         );
     }
 
-    public void reboot() {
+    @FXML
+    void reboot() {
         getSelectedDev().forEach(d -> {
                     try {
-                        String res = new SshJClient().launch(d.getDevURI(), SshJClient.CMD_REBOOT, mainApp.DEF_USER);
+                        String res = new SshJClient().launch(d.getDevURI(), SshJClient.CMD_REBOOT, Main.DEF_USER);
                         LOG.info("Result:{}", res);
                     } catch (IOException e) {
                         LOG.error("IO error!", e);//.printStackTrace();
@@ -365,10 +370,12 @@ public class Controller implements Initializable {
         );
     }
 
-    public void save() {
+    @FXML
+    void save() {
     }
 
-    public void check() {
+    @FXML
+    void check() {
         LOG.info("Checking...");
     }
 
@@ -388,8 +395,8 @@ public class Controller implements Initializable {
     }
 
     class PingListener extends Component {
-        private final Map<String, String> chkDevMap = Collections.synchronizedMap(new HashMap<String, String>());
-        private final List<InetSocketAddress> pinglist = Collections.synchronizedList(new ArrayList<InetSocketAddress>());
+        private final Map<String, String> chkDevMap = Collections.synchronizedMap(new HashMap<>());
+        private final List<InetSocketAddress> pinglist = Collections.synchronizedList(new ArrayList<>());
 
         @Subscription
         public void onString(String s, boolean avail) {
@@ -428,7 +435,7 @@ public class Controller implements Initializable {
                 String saddr = addr.getAddress().getHostAddress();
                 SshJClient ssh = new SshJClient();
                 LOG.info("*Checking {} host...", saddr);
-                ret = ssh.launch(saddr, SshJClient.CMD_HOSTNAME, mainApp.DEF_USER).split("\n")[0]; //define hostname, if it's possible
+                ret = ssh.launch(saddr, SshJClient.CMD_HOSTNAME, Main.DEF_USER).split("\n")[0]; //define hostname, if it's possible
                 if (ret.length() > 0) {
                     LOG.info("*Address: {}; HostName: {}", saddr, ret);
                     //put in list all hosts has been connected with user and ID by ssh (see:SshJClient.launch)
@@ -436,9 +443,8 @@ public class Controller implements Initializable {
                 }
             } catch (IOException e) {
                 //e.printStackTrace();
-            } finally {
-                return ret;
             }
+            return ret;
         }
 
 /*
@@ -488,13 +494,11 @@ public class Controller implements Initializable {
                 });
 */
             chkDevMap.clear();
-            pinglist.forEach(addr -> {
-                checkSshHost(addr);
-            });
+            pinglist.forEach(this::checkSshHost);
             LOG.info("*Exit checking");
             LOG.info("*Assign to DeviceData");
             ObservableList<Device> devdata = mainApp.getDeviceData();
-            List<Device> list = new ArrayList<Device>();
+            List<Device> list = new ArrayList<>();
             devdata
                     .forEach(d -> {
                         String devname = d.getDevName();
@@ -517,7 +521,7 @@ public class Controller implements Initializable {
      */
     public void setMainApp(Main mainApp) {
         this.mainApp = mainApp;
-        // Add observable pinglist data to the table
+        // Add observable data to the table
         ctlDevices.setItems(mainApp.getDeviceData());
         ctlResources.setItems(mainApp.getResourceData());
 
@@ -557,35 +561,31 @@ public class Controller implements Initializable {
         serviceSch.scheduleWithFixedDelay(scanTask, 0, TIMEOUT_SCAN, TimeUnit.MILLISECONDS);
 */
 
-        thPing = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Thread.currentThread().setName("Ping");
+        thPing = new Thread(() -> {
+            Thread.currentThread().setName("Ping");
 /*
-                        Ping ping=new Ping();
-                        PingListener listener=new PingListener();
-                        ping.add2broker(listener);
+                    Ping ping=new Ping();
+                    PingListener listener=new PingListener();
+                    ping.add2broker(listener);
 */
-                try {
-                    while (true) {
-                        // my code goes here
+            try {
+                while (true) {
+                    // my code goes here
 //                                    upnpService.getControlPoint().search(stAllHeader);//broadcast UPnP
-                        ping.pingIface(ifaceNum, TIMEOUT_PING);
-                        //launch result processing
-                        LOG.info("Waiting for processing...");
-                        listener.checkSsh();
-                        LOG.info("Timeout Scan {} ms...", TIMEOUT_SCAN);
-                        Thread.currentThread().sleep(TIMEOUT_SCAN);
+                    ping.pingIface(ifaceNum, TIMEOUT_PING);
+                    //launch result processing
+                    LOG.info("Waiting for processing...");
+                    listener.checkSsh();
+                    LOG.info("Timeout Scan {} ms...", TIMEOUT_SCAN);
+                    Thread.currentThread().sleep(TIMEOUT_SCAN);
 //                                    {Launcher.main(new String[]{""});}
 //                                Thread.currentThread().sleep(5000);
-                    }
-                } catch (InterruptedException e) {
-                    LOG.info("Interrupted");
-//                                e.printStackTrace();
-                } catch (IOException e) {
-                    LOG.error("IO fail!", e);
-                    return;
                 }
+            } catch (InterruptedException e) {
+                LOG.info("Interrupted");
+//                                e.printStackTrace();
+            } catch (IOException e) {
+                LOG.error("IO fail!", e);
             }
         }
         );
@@ -596,7 +596,7 @@ public class Controller implements Initializable {
     /**
      * close all threads have been created
      */
-    public void closeUtilThreads() throws InterruptedException {
+    public void closeUtilThreads() {
         LOG.info("*Closing threads...");
 //        service.shutdownNow();
         if (scanTask != null) {

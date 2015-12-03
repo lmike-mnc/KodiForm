@@ -1,7 +1,6 @@
 package kodiForm;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
@@ -15,32 +14,34 @@ import org.apache.http.impl.client.HttpRequestFutureTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.concurrent.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by mike on 12.11.15.
  */
-public class JsonUtils {
+class JsonUtils {
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
     public static String HTTP_PORT = "";
-    public static String PLID_MOV = "1";
-    public static String PLID_PIC = "2";
-    public static String JSON_FULLSCREEN = "{\"id\":1,\"jsonrpc\":2.0,\"method\":\"GUI.SetFullscreen\",\"params\":{\"fullscreen\":true}}";
-    public static String JSON_PL_STATUS = "{\"id\":$id,\"jsonrpc\":\"2.0\",\"method\":\"Player.GetItem\",\"params\":{\"playerid\":$PLID}}";
-    public static String JSON_STOP = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Player.Stop\",\"params\":{\"playerid\":$PLID}}";
-    public static String JSON_PL_CLEAR = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":$PLID}}";
-    public static String JSON_PL_ADD = "{\"id\":$id,\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Add\",\"params\":{\"playlistid\":$PLID,\"item\": {\"file\":\"$URI\"}}}";
-    public static String JSON_PL = "{\"id\":$id,\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\": {\"playlistid\":$PLID},\"options\":{\"repeat\":\"all\"}}}";
-    public static String JSON_CLEAR_MOV = JSON_PL_CLEAR.replace("$PLID", PLID_MOV);
-    public static String JSON_CLEAR_PIC = JSON_PL_CLEAR.replace("$PLID", PLID_PIC);
-    public static String JSON_PL_MOV_ADD = JSON_PL_ADD.replace("$PLID", PLID_MOV);
-    public static String JSON_PL_PIC_ADD = JSON_PL_ADD.replace("$PLID", PLID_PIC);
+    public static final String PLID_MOV = "1";
+    public static final String PLID_PIC = "2";
+    public static final String JSON_FULLSCREEN = "{\"id\":1,\"jsonrpc\":2.0,\"method\":\"GUI.SetFullscreen\",\"params\":{\"fullscreen\":true}}";
+    public static final String JSON_PL_STATUS = "{\"id\":$id,\"jsonrpc\":\"2.0\",\"method\":\"Player.GetItem\",\"params\":{\"playerid\":$PLID}}";
+    public static final String JSON_STOP = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Player.Stop\",\"params\":{\"playerid\":$PLID}}";
+    public static final String JSON_PL_CLEAR = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":$PLID}}";
+    public static final String JSON_PL_ADD = "{\"id\":$id,\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Add\",\"params\":{\"playlistid\":$PLID,\"item\": {\"file\":\"$URI\"}}}";
+    public static final String JSON_PL = "{\"id\":$id,\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\": {\"playlistid\":$PLID},\"options\":{\"repeat\":\"all\"}}}";
+    public static final String JSON_CLEAR_MOV = JSON_PL_CLEAR.replace("$PLID", PLID_MOV);
+    public static final String JSON_CLEAR_PIC = JSON_PL_CLEAR.replace("$PLID", PLID_PIC);
+    public static final String JSON_PL_MOV_ADD = JSON_PL_ADD.replace("$PLID", PLID_MOV);
+    public static final String JSON_PL_PIC_ADD = JSON_PL_ADD.replace("$PLID", PLID_PIC);
     public static String JSON_PL_MOV = JSON_PL.replace("$PLID", PLID_MOV);
     public static String JSON_PL_PIC = JSON_PL.replace("$PLID", PLID_PIC);
     public static String JSON_STOP_MOV = JSON_STOP.replace("$PLID", PLID_MOV);
     public static String JSON_STOP_PIC = JSON_STOP.replace("$PLID", PLID_PIC);
-    public static String JSON_PIC = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"path\":\"$URI\",\"random\":false}}}";
+    public static final String JSON_PIC = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"path\":\"$URI\",\"random\":false}}}";
 
     public static String postRequest(String host, String protocol, String url, String data) {
         HttpClient httpClient = HttpClientBuilder.create().build(); //Use this instead
@@ -63,9 +64,8 @@ public class JsonUtils {
         } catch (Exception ex) {
             // handle exception here
             LOG.error("fail!", ex);
-        } finally {
-            return res;
         }
+        return res;
     }
 
     public static void main(String[] args) throws Exception {
@@ -74,17 +74,13 @@ public class JsonUtils {
                 .setMaxConnPerRoute(5)
                 .setMaxConnTotal(5).build();
         ExecutorService execService = Executors.newFixedThreadPool(5);
-        FutureRequestExecutionService requestExecService = new FutureRequestExecutionService(
-                httpclient, execService);
-        try {
+        try (FutureRequestExecutionService requestExecService = new FutureRequestExecutionService(
+                httpclient, execService)) {
             // Because things are asynchronous, you must provide a ResponseHandler
-            ResponseHandler<Boolean> handler = new ResponseHandler<Boolean>() {
-                @Override
-                public Boolean handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-                    // simply return true if the status was OK
-                    LOG.info(org.apache.http.util.EntityUtils.toString(response.getEntity()));
-                    return response.getStatusLine().getStatusCode() == 200;
-                }
+            ResponseHandler<Boolean> handler = response -> {
+                // simply return true if the status was OK
+                LOG.info(org.apache.http.util.EntityUtils.toString(response.getEntity()));
+                return response.getStatusLine().getStatusCode() == 200;
             };
 
             // Simple request ...
@@ -138,8 +134,6 @@ public class JsonUtils {
                     HttpClientContext.create(), handler, callback);
             Boolean wasItOk4 = futureTask4.get(10, TimeUnit.SECONDS);
             System.out.println("It was ok? " + wasItOk4);
-        } finally {
-            requestExecService.close();
         }
     }
 

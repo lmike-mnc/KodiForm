@@ -11,7 +11,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.Date;
 
-public class Scan {
+class Scan {
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
     private static final int TIMEOUT = 500;
 
@@ -71,6 +71,7 @@ public class Scan {
 
         try {
             start = new Date();
+            assert inetAddress != null;
             if (inetAddress.isReachable(TIMEOUT)) {
                 stop = new Date();
                 return (stop.getTime() - start.getTime());
@@ -94,7 +95,7 @@ public class Scan {
      * @param
      * @return delay if the specified host responded, -1 if failed
      */
-    static long test(String hostAddress, int port) {
+    private static long test(String hostAddress, int port) {
         InetAddress inetAddress = null;
         InetSocketAddress socketAddress = null;
         SocketChannel sc = null;
@@ -133,6 +134,7 @@ public class Scan {
         }
 
         try {
+            assert sc != null;
             sc.close();
         } catch (IOException e) {
             LOG.error("failed!", e);//.printStackTrace();

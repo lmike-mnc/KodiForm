@@ -16,12 +16,11 @@ import static java.lang.System.out;
 /**
  * Created by mike on 29.10.15.
  */
-public class NetUtils {
+class NetUtils {
     private static int TIMEOUT = 500;
     private static short MASQ_LIIM = 20;//limit prefix masq len for restrict lage network scan
     private static final String resPath = "./res";
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
-    ;
 
     private static Predicate<NetworkInterface> notLoopback = iface -> {
         boolean ret = false;
@@ -32,7 +31,7 @@ public class NetUtils {
         }
         return ret;
     };
-    private static Predicate<NetworkInterface> notFake = iface -> {
+    private static final Predicate<NetworkInterface> notFake = iface -> {
         boolean ret = false;
         try {
             ret = !iface.isLoopback() & !iface.isPointToPoint()
@@ -43,12 +42,12 @@ public class NetUtils {
         }
         return ret;
     };
-    private static Predicate<InterfaceAddress> masq = addr -> {
+    private static final Predicate<InterfaceAddress> masq = addr -> {
         boolean ret = false;
         ret = addr.getNetworkPrefixLength() >= MASQ_LIIM;
         return ret;
     };
-    private static Predicate<InterfaceAddress> ipv4 = addr -> {
+    private static final Predicate<InterfaceAddress> ipv4 = addr -> {
         LOG.info("filter IPV4 for:" + addr.getAddress().getHostAddress());
         return addr.getAddress() instanceof Inet4Address;
     };
@@ -61,7 +60,7 @@ public class NetUtils {
      * @param subnet  CIDR notation "192.168.0.1/16"
      * @return true if included
      */
-    public static boolean checkIpBySubNet(String address, String subnet) {
+    private static boolean checkIpBySubNet(String address, String subnet) {
         SubnetUtils utils = new SubnetUtils(subnet);
         LOG.info("Network:{}", utils.getInfo().getNetworkAddress());
         return utils.getInfo().isInRange(address);
@@ -95,13 +94,14 @@ public class NetUtils {
     }
 
     public static List<String> accessibleRange(String anyIp) {
-        ArrayList<String> res = new ArrayList<String>();
+        ArrayList<String> res = new ArrayList<>();
         InetAddress[] addrs = null;
         try {
             addrs = InetAddress.getAllByName(anyIp);
         } catch (UnknownHostException e) {
             e.printStackTrace();
         }
+        assert addrs != null;
         for (InetAddress addr : addrs) {
             try {
                 if (addr.isReachable(1000)) {
@@ -115,7 +115,7 @@ public class NetUtils {
     }
 
     public static List<String> accessibleRange() {
-        ArrayList<String> res = new ArrayList<String>();
+        ArrayList<String> res = new ArrayList<>();
         for (String saddr : getRangeFromLocal(0)) {
             InetAddress addr = null;
             try {
@@ -125,8 +125,6 @@ public class NetUtils {
                 } else {
                     System.out.println("Is Not reachiable: " + addr.getHostAddress());
                 }
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -134,7 +132,8 @@ public class NetUtils {
         return res;
     }
 
-    public static <T> T[] concatAll(T[] first, T[]... rest) {
+    @SafeVarargs
+    private static <T> T[] concatAll(T[] first, T[]... rest) {
         //http://stackoverflow.com/questions/80476/how-can-i-concatenate-two-arrays-in-java
         int totalLength = first.length;
         for (T[] array : rest) {
@@ -149,7 +148,7 @@ public class NetUtils {
         return result;
     }
 
-    public static List<NetworkInterface> getIfaces() throws SocketException {
+    private static List<NetworkInterface> getIfaces() throws SocketException {
         return Collections.list(NetworkInterface.getNetworkInterfaces()).stream().filter(notFake).collect(Collectors.toList());
     }
 
@@ -167,12 +166,8 @@ public class NetUtils {
                 res = liface.getInterfaceAddresses().stream()
                         .filter(ipv4)
                         .filter(masq)
-                        .map(a -> {
-                            return new SubnetUtils(a.getAddress().getHostAddress() + "/" + String.valueOf(a.getNetworkPrefixLength())).getInfo().getAllAddresses();
-                        })
-                        .reduce(new String[]{}, (s1, s2) -> {
-                            return concatAll(s1, s2);
-                        });
+                        .map(a -> new SubnetUtils(a.getAddress().getHostAddress() + "/" + String.valueOf(a.getNetworkPrefixLength())).getInfo().getAllAddresses())
+                        .reduce(new String[]{}, NetUtils::concatAll);
                 /*for(InterfaceAddress addr:liface.getInterfaceAddresses()){
                     LOG.info(addr.getAddress().getHostAddress() + "/" +addr.getNetworkPrefixLength());
                     res = concatAll(res,new SubnetUtils(addr.getAddress().getHostAddress() + "/" + String.valueOf(addr.getNetworkPrefixLength())).getInfo().getAllAddresses());
@@ -189,19 +184,13 @@ public class NetUtils {
                                     .filter(ipv4)
                                     .filter(masq)
                                     //for each ipv4 address on interface
-                                    .map(a -> {
-                                        return new SubnetUtils(a.getAddress().getHostAddress() + "/" + String.valueOf(a.getNetworkPrefixLength())).getInfo().getAllAddresses();
-                                    })
-                                    .reduce(new String[]{}, (s1, s2) -> {
-                                        return concatAll(s1, s2);
-                                    });
+                                    .map(a -> new SubnetUtils(a.getAddress().getHostAddress() + "/" + String.valueOf(a.getNetworkPrefixLength())).getInfo().getAllAddresses())
+                                    .reduce(new String[]{}, NetUtils::concatAll);
 //                            return new SubnetUtils(iface.getInterfaceAddresses().get(0).getAddress().getHostAddress() +
 //                                    "/" + String.valueOf(iface.getInterfaceAddresses().get(0).getNetworkPrefixLength())).getInfo().getAllAddresses();
                         })
                         //return combined String[] (for all interfaces)
-                        .reduce(new String[]{}, (s1, s2) -> {
-                            return concatAll(s1, s2);
-                        });
+                        .reduce(new String[]{}, NetUtils::concatAll);
             }
         } catch (SocketException e) {
             e.printStackTrace();
@@ -209,7 +198,7 @@ public class NetUtils {
         return res;
     }
 
-    static void displayInterfaceInformation(NetworkInterface netint) throws SocketException {
+    private static void displayInterfaceInformation(NetworkInterface netint) {
         //https://docs.oracle.com/javase/tutorial/networking/nifs/listing.html
         out.printf("Display name: %s\n", netint.getDisplayName());
         out.printf("Name: %s\n", netint.getName());
@@ -221,17 +210,15 @@ public class NetUtils {
         out.printf("\n");
     }
 
-    public static List<InterfaceAddress> getIfacesList() throws SocketException {
+    private static List<InterfaceAddress> getIfacesList() throws SocketException {
         return Collections.list(NetworkInterface.getNetworkInterfaces()).stream()
 //                networkInterface.getInterfaceAddresses().stream()
                 .filter(notFake)
                 //for each interface (excluding localhost, virtual, P2P)
                 //return String[]
-                .flatMap(iface -> {
-                    return iface.getInterfaceAddresses().stream()
-                            .filter(ipv4)
-                            .filter(masq);
-                })
+                .flatMap(iface -> iface.getInterfaceAddresses().stream()
+                        .filter(ipv4)
+                        .filter(masq))
                 .collect(Collectors.toList())
                 ;
     }

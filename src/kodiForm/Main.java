@@ -17,12 +17,12 @@ import java.util.prefs.Preferences;
 
 import static kodiForm.FtpUtils.*;
 
-public class Main extends Application {
+class Main extends Application {
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
     public static String DEF_USER = "root";
     public static String FTP_PORT = "1680";//CarbonCopy port - often it's free and not blocked (on Windows)
-    private ObservableList<Device> deviceData = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
-    private ObservableList<Resource> resourceData = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
+    private final ObservableList<Device> deviceData = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
+    private final ObservableList<Resource> resourceData = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
     private Stage primaryStage = null;
     private static final String workingdir = Paths.get(".").toAbsolutePath().normalize().toString();
     private static Controller controller;
@@ -68,6 +68,7 @@ public class Main extends Application {
         }
         this.primaryStage = primaryStage;
         primaryStage.setTitle("Kodi Form");
+        assert root != null;
         primaryStage.setScene(new Scene(root));
         primaryStage.setX(x);
         primaryStage.setY(y);
@@ -129,6 +130,7 @@ public class Main extends Application {
             launch(args);
         } finally {
             LOG.info("stopping FTP...");
+            assert srv != null;
             srv.stop();
             srv = null;//garbage
             LOG.info(" FTP has stopped");

@@ -21,14 +21,13 @@ import java.util.List;
 /**
  * Created by mike on 12.11.15.
  */
-public class FtpUtils {
+class FtpUtils {
     private static final String resPath = "./res";
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
-    ;
-    public static final List<Authority> ADMIN_AUTHORITIES = new ArrayList();
+    private static final List<Authority> ADMIN_AUTHORITIES = new ArrayList();
     public static final List<Authority> ANON_AUTHORITIES = new ArrayList();
     private static final FtpServerFactory serverFactory = new FtpServerFactory();
-    static String ANON_USER = "anonymous";
+    static final String ANON_USER = "anonymous";
 
     static {
         ADMIN_AUTHORITIES.add(new WritePermission());
@@ -51,6 +50,7 @@ public class FtpUtils {
 
 // start the server
         try {
+            assert server != null;
             server.start();
         } catch (Exception e) {
             e.printStackTrace();
@@ -58,7 +58,7 @@ public class FtpUtils {
         return server;
     }
 
-    public static UserManager createFtpUser(String userName, List<Authority> authority, String userPassword) {
+    private static UserManager createFtpUser(String userName, List<Authority> authority, String userPassword) {
         PropertiesUserManagerFactory userManagerFactory = new PropertiesUserManagerFactory();
         File tmp = new File(resPath + "/ftpusers.properties");
         LOG.info("resource PATH:{}", tmp.getAbsolutePath());
@@ -77,7 +77,7 @@ public class FtpUtils {
                 LOG.info("Creating user : " + userName);
                 user = new BaseUser();
                 user.setName(userName);
-                user.setPassword(userName);
+                user.setPassword(userPassword);
                 user.setEnabled(true);
                 user.setAuthorities(authority);
                 tmp = new File(resPath + "/home/" + userName);
@@ -115,7 +115,7 @@ public class FtpUtils {
         return userManager;
     }
 
-    public static UserManager createAnonymous() {
+    private static UserManager createAnonymous() {
         return createFtpUser(ANON_USER, ANON_AUTHORITIES, "");
     }
 

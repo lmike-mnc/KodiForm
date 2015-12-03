@@ -6,9 +6,7 @@ import net.schmizz.sshj.connection.channel.direct.Session;
 import net.schmizz.sshj.sftp.RemoteResourceFilter;
 import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import net.schmizz.sshj.sftp.SFTPClient;
-import net.schmizz.sshj.transport.TransportException;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
-import net.schmizz.sshj.userauth.UserAuthException;
 import net.schmizz.sshj.xfer.FileSystemFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +29,7 @@ public class SshJClient implements SshClient {
     static final String CMD_WAKEUP = "systemctl restart kodi";//'"'&"echo 'on 0' | cec-client -s -d 1"&'"';
     static final String CMD_REBOOT = "reboot";
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
-    ;
+
     private static final String BASH_JSON_TEMPL = "curl --header \"Content-Type: application/json\" --data $JSON \"http://localhost/jsonrpc\"";
     private static String BASH_FULLSCREEN = BASH_JSON_TEMPL.replace("$JSON", JsonUtils.JSON_FULLSCREEN);
 
@@ -68,7 +66,7 @@ public class SshJClient implements SshClient {
         this.privateKey = privateKey;
     }
 
-    private void authUserPublicKey(String user) throws UserAuthException, TransportException {
+    private void authUserPublicKey(String user) {
         this.user = user;
     }
 
@@ -100,7 +98,7 @@ public class SshJClient implements SshClient {
 
 */
     public void connect(String host, boolean... trusted) throws IOException {
-        boolean trust = trusted.length > 0 ? trusted[0] : false;
+        boolean trust = trusted.length > 0 && trusted[0];
         sshClient = new SSHClient();
         sshClient.setConnectTimeout(TIMEOUT_SSH);
         if (knownHosts == null) {
@@ -195,9 +193,7 @@ public class SshJClient implements SshClient {
         try (SFTPClient sftpClient = sshClient.newSFTPClient()) {
             List<String> children = new ArrayList<>();
             List<RemoteResourceInfo> childrenInfos = sftpClient.ls(remotePath, remoteFolderResourceFilter);
-            childrenInfos.stream().forEach((childInfo) -> {
-                children.add(childInfo.getName());
-            });
+            childrenInfos.stream().forEach((childInfo) -> children.add(childInfo.getName()));
             return children;
         }
     }
@@ -206,17 +202,14 @@ public class SshJClient implements SshClient {
     public String execute(String command) throws IOException {
         String res = null;
         InputStream is;
-        Session session = sshClient.startSession();
-        try {
+        try (Session session = sshClient.startSession()) {
             Session.Command cmd = session.exec(command);
             cmd.join(TIMEOUT_CMD, TimeUnit.MILLISECONDS);
             Integer exitStatus = cmd.getExitStatus();
             is = cmd.getInputStream();
             res = IOUtils.readFully(is).toString();
-        } finally {
-            session.close();
-            return res;
         }
+        return res;
     }
 
     @Override

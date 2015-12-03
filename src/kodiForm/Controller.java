@@ -563,23 +563,16 @@ public class Controller implements Initializable {
 
         thPing = new Thread(() -> {
             Thread.currentThread().setName("Ping");
-/*
-                    Ping ping=new Ping();
-                    PingListener listener=new PingListener();
-                    ping.add2broker(listener);
-*/
             try {
                 while (true) {
                     // my code goes here
-//                                    upnpService.getControlPoint().search(stAllHeader);//broadcast UPnP
+//                    upnpService.getControlPoint().search(stAllHeader);//broadcast UPnP
                     ping.pingIface(ifaceNum, TIMEOUT_PING);
                     //launch result processing
                     LOG.info("Waiting for processing...");
                     listener.checkSsh();
                     LOG.info("Timeout Scan {} ms...", TIMEOUT_SCAN);
                     Thread.sleep(TIMEOUT_SCAN);
-//                                    {Launcher.main(new String[]{""});}
-//                                Thread.currentThread().sleep(5000);
                 }
             } catch (InterruptedException e) {
                 LOG.info("Interrupted");

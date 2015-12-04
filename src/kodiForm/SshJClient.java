@@ -34,12 +34,16 @@ public class SshJClient implements SshClient {
     private static String BASH_FULLSCREEN = BASH_JSON_TEMPL.replace("$JSON", JsonUtils.JSON_FULLSCREEN);
 
     private static String BASH_PL_CLEAR = BASH_JSON_TEMPL.replace("$JSON", JsonUtils.JSON_PL_CLEAR);
+/*
     private static String BASH_PL_MOV_CLEAR = BASH_JSON_TEMPL.replace("$JSON", JsonUtils.JSON_CLEAR_MOV);
     private static String BASH_PL_PIC_CLEAR = BASH_JSON_TEMPL.replace("$JSON", JsonUtils.JSON_CLEAR_PIC);
+*/
 
     private static String BASH_PL_ADD = BASH_JSON_TEMPL.replace("$JSON", JsonUtils.JSON_PL_ADD);
+/*
     private static String BASH_PL_MOV_ADD = BASH_JSON_TEMPL.replace("$JSON", JsonUtils.JSON_PL_MOV_ADD);
     private static String BASH_PL_PIC_ADD = BASH_JSON_TEMPL.replace("$JSON", JsonUtils.JSON_PL_PIC_ADD);
+*/
 
     private static String BASH_PL = BASH_JSON_TEMPL.replace("$JSON", JsonUtils.JSON_PL);
     private static String BASH_PIC = BASH_JSON_TEMPL.replace("$JSON", JsonUtils.JSON_PIC);

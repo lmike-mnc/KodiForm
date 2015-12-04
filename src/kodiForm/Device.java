@@ -17,9 +17,9 @@ class Device {
     }
 
     public Device(String devName, String devURI, String devResource) {
-        this.devName = new SimpleStringProperty(devName);
-        this.devURI = new SimpleStringProperty(devURI);
-        this.devResource = new SimpleStringProperty(devResource);
+        this.devName = new SimpleStringProperty(devName == null ? "" : devName);
+        this.devURI = new SimpleStringProperty(devURI == null ? "" : devURI);
+        this.devResource = new SimpleStringProperty(devResource == null ? "" : devResource);
     }
 
     public void setDevName(String devName) {

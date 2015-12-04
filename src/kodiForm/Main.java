@@ -130,8 +130,7 @@ public class Main extends Application {
             launch(args);
         } finally {
             LOG.info("stopping FTP...");
-            assert srv != null;
-            srv.stop();
+            if (srv != null) srv.stop();
             srv = null;//garbage
             LOG.info(" FTP has stopped");
 /*

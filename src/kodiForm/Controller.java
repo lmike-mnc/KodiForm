@@ -269,7 +269,7 @@ public class Controller implements Initializable {
     void play() {
         ctlMsg.setText("Trying to playing...\n");
         List<Callable<String>> callables = getSelectedDev().stream()
-                .filter(d -> !d.getDevResource().isEmpty())
+                .filter(d -> !(d.getDevResource().isEmpty() || d.getDevURI().isEmpty()))
                 .map(d -> {
                     String sResources = d.getDevResource();
                     String saddr = null;
@@ -358,24 +358,31 @@ public class Controller implements Initializable {
         execInPool(callables);
     }
 
-    private void execInPool(List<Callable<String>> callables) {
-        try {
-            executor.invokeAll(callables
-                    //, 1000, TimeUnit.MILLISECONDS
-            )
-                    .stream()
-                    .map(future -> {
-                        try {
-                            return future.get();
-                        } catch (InterruptedException | ExecutionException e) {
-                            future.cancel(true);
-                            return "Interrupted";
-                        }
-                    })
-                    .forEach(ctlMsg::appendText);
-        } catch (InterruptedException e) {
-            //e.printStackTrace();
+    private synchronized List<String> execInPool(List<Callable<String>> callables) {
+        List<String> res = null;
+        synchronized (executor) {
+            try {
+                res = executor.invokeAll(callables
+                        //, 1000, TimeUnit.MILLISECONDS
+                )
+                        .stream()
+                        .map(future -> {
+                            try {
+                                return future.get();
+                            } catch (InterruptedException | ExecutionException e) {
+                                future.cancel(true);
+                                return "Interrupted";
+                            }
+                        })
+                        .collect(Collectors.toList());
+                res.stream().filter(ret -> ret != null).forEach(ret -> {
+                    if (ret != null) ctlMsg.appendText(ret);
+                });
+            } catch (InterruptedException e) {
+                //e.printStackTrace();
+            }
         }
+        return res;
     }
 
     @FXML
@@ -393,7 +400,9 @@ public class Controller implements Initializable {
                             .callableRequest(d.getDevURI() + ((JsonUtils.HTTP_PORT.length() > 0) ? (":" + JsonUtils.HTTP_PORT) : "")
                                     , Launcher.HTTP_PROTO
                                     , Launcher.JSONRPC
-                                    , JsonUtils.JSON_STOP.replace("$PLID", plid));
+                                    , Arrays.asList(JsonUtils.JSON_STOP.replace("$PLID", plid),
+                                            JsonUtils.JSON_PL_CLEAR.replace("$PLID", plid))
+                                            .toString());
 
                     return ret;
                 }).collect(Collectors.toList());
@@ -443,7 +452,7 @@ public class Controller implements Initializable {
         LOG.info("Checking...");
         ctlMsg.setText("Checking...");
         List<Callable<String>> callables = getSelectedDev().stream()
-                .filter(d -> !d.getDevResource().isEmpty())
+                .filter(d -> !(d.getDevResource().isEmpty() || d.getDevURI().isEmpty()))
                 .map(d -> {
                     Callable<String> ret = null;
                     String sResources = d.getDevResource();
@@ -457,7 +466,9 @@ public class Controller implements Initializable {
 
                     return ret;
                 }).collect(Collectors.toList());
-        execInPool(callables);
+        List<String> res = execInPool(callables);
+        //if (res!=null){}
+
     }
 
     @FXML
@@ -585,7 +596,9 @@ public class Controller implements Initializable {
                         String devname = d.getDevName();
                         if (chkDevMap.get(devname) != null) {
                             d.setDevURI(chkDevMap.get(devname));
+                            //remove from checking list
                             chkDevMap.remove(devname);
+                            //add for retain
                             list.add(d);
                         }
                     });
@@ -681,7 +694,7 @@ public class Controller implements Initializable {
         ObservableList<Device> list = mainApp.getDeviceData();
         Arrays.asList(savedResources.keys())
                 .forEach(d -> {
-                    list.add(new Device(d, null, savedResources.get(d, "")));
+                    list.add(new Device(d, "", savedResources.get(d, "")));
                 });
     }
 

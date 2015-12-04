@@ -89,6 +89,8 @@ class Launcher {
         list.add(JsonUtils.JSON_PL
                 .replace("$PLID", plid)
                 .replace("$id", String.valueOf(cnt.incrementAndGet())));
+        list.add(JsonUtils.JSON_FULLSCREEN
+                .replace("$id", String.valueOf(cnt.incrementAndGet())));
         list.add(JsonUtils.JSON_PL_STATUS
                 .replace("$PLID", plid)
                 .replace("$id", String.valueOf(cnt.incrementAndGet()))

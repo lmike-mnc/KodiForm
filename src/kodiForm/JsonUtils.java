@@ -27,20 +27,24 @@ class JsonUtils {
     public static String HTTP_PORT = "";
     public static final String PLID_MOV = "1";
     public static final String PLID_PIC = "2";
-    public static final String JSON_FULLSCREEN = "{\"id\":1,\"jsonrpc\":2.0,\"method\":\"GUI.SetFullscreen\",\"params\":{\"fullscreen\":true}}";
+    public static final String JSON_FULLSCREEN = "{\"id\":$id,\"jsonrpc\":2.0,\"method\":\"GUI.SetFullscreen\",\"params\":{\"fullscreen\":true}}";
     public static final String JSON_PL_STATUS = "{\"id\":$id,\"jsonrpc\":\"2.0\",\"method\":\"Player.GetItem\",\"params\":{\"playerid\":$PLID}}";
     public static final String JSON_STOP = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Player.Stop\",\"params\":{\"playerid\":$PLID}}";
     public static final String JSON_PL_CLEAR = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":$PLID}}";
     public static final String JSON_PL_ADD = "{\"id\":$id,\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Add\",\"params\":{\"playlistid\":$PLID,\"item\": {\"file\":\"$URI\"}}}";
     public static final String JSON_PL = "{\"id\":$id,\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\": {\"playlistid\":$PLID},\"options\":{\"repeat\":\"all\"}}}";
-    public static final String JSON_CLEAR_MOV = JSON_PL_CLEAR.replace("$PLID", PLID_MOV);
-    public static final String JSON_CLEAR_PIC = JSON_PL_CLEAR.replace("$PLID", PLID_PIC);
-    public static final String JSON_PL_MOV_ADD = JSON_PL_ADD.replace("$PLID", PLID_MOV);
-    public static final String JSON_PL_PIC_ADD = JSON_PL_ADD.replace("$PLID", PLID_PIC);
+    /*
+        public static final String JSON_CLEAR_MOV = JSON_PL_CLEAR.replace("$PLID", PLID_MOV);
+        public static final String JSON_CLEAR_PIC = JSON_PL_CLEAR.replace("$PLID", PLID_PIC);
+        public static final String JSON_PL_MOV_ADD = JSON_PL_ADD.replace("$PLID", PLID_MOV);
+        public static final String JSON_PL_PIC_ADD = JSON_PL_ADD.replace("$PLID", PLID_PIC);
+    */
+/*
     public static String JSON_PL_MOV = JSON_PL.replace("$PLID", PLID_MOV);
     public static String JSON_PL_PIC = JSON_PL.replace("$PLID", PLID_PIC);
     public static String JSON_STOP_MOV = JSON_STOP.replace("$PLID", PLID_MOV);
     public static String JSON_STOP_PIC = JSON_STOP.replace("$PLID", PLID_PIC);
+*/
     public static final String JSON_PIC = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Player.Open\",\"params\":{\"item\":{\"path\":\"$URI\",\"random\":false}}}";
 
     public static String postRequest(String host, String protocol, String url, String data) {

@@ -54,11 +54,12 @@ public class Main extends Application {
         double w = userPrefs.getDouble("stage.width", 850);
         double h = userPrefs.getDouble("stage.height", 602);
         SshJClient.STORAGE_SSH = userPrefs.get("ssh.storage", "");
-        SshJClient.KODI_FILTER = userPrefs.get("ssh.kodifilter", "(?i)ub1-[0-9]+");//"(?i)castrol-[0-9]+");//"(?i)ubsrv[0-9]+");
-        JsonUtils.HTTP_PORT = userPrefs.get("http.port", "8090");
+        SshJClient.KODI_FILTER = userPrefs.get("ssh.kodifilter", "(?i)castrol-[0-9]+");//"(?i)ub1-[0-9]+");//"(?i)castrol-[0-9]+");//"(?i)ubsrv[0-9]+");
+        JsonUtils.HTTP_PORT = userPrefs.get("http.port", "");
         FTP_PORT = userPrefs.get("ftp.port", "1680");
 
         LOG.info(String.format("Window Width: %s, Height %s", String.valueOf(w), String.valueOf(h)));
+        LOG.info("Preference path:{}", userPrefs.absolutePath());
 
         Parent root = null;
         try {

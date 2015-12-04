@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -221,6 +222,26 @@ public class SshJClient implements SshClient {
         sshClient.close();
     }
 
+    public String uploadAll(String host, String path2remote, String user, String... auth) throws IOException {
+        SshJClient ssh = new SshJClient();
+        try {
+            if (auth.length == 0) {
+                ssh.authUserPublicKey(user);
+            } else if (auth[0].contains(File.separator)) {
+                ssh.authUserPublicKey(user, Paths.get(auth[0]));
+            } else {
+                ssh.authUserPassword(user, auth[0]);
+            }
+            ssh.connect(host, true);
+            String[] path = path2remote.split(":");
+
+            ssh.upload(FileSystems.getDefault().getPath(path[0]), path[1]);
+        } finally {
+            ssh.close();
+        }
+        return "";
+    }
+
     public String launch(String host, String command, String user, String... auth) throws IOException {
         SshJClient ssh = new SshJClient();
         if (auth.length == 0) {
@@ -251,7 +272,8 @@ public class SshJClient implements SshClient {
             } else if (args.length > 3) {
                 result = ssh.launch(args[0], args[1], args[2], Arrays.copyOfRange(args, 3, args.length));
             } else {
-                result = ssh.launch(args[0], args[1], args[2]);
+                ssh.uploadAll(args[0], "src:./", args[2]);
+                //result = ssh.launch(args[0], args[1], args[2]);
             }
             LOG.info("Result: " + result);
         } catch (IOException e) {

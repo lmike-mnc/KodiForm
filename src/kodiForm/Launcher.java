@@ -129,6 +129,17 @@ class Launcher {
 */
         try {
             executor.invokeAll(//callables
+                    Arrays.asList(callableRequest("localhost:8090"
+                            , Launcher.HTTP_PROTO
+                            , Launcher.JSONRPC
+                            ,
+//                            "{ \"jsonrpc\": \"2.0\", \"method\": \"GUI.SetFullscreen\", \"params\": {\"fullscreen\": true }, \"id\": \"folkrule\"}"
+                            JsonUtils.JSON_FULLSCREEN
+                                    .replace("$id", "1")
+
+                            )
+                    )
+/*
                     callablesJson(
                             "localhost",
                             Arrays.asList(
@@ -136,6 +147,7 @@ class Launcher {
                                     "ftp://localhost:1680/DSC_1972.jpg"
                             )
                             , JsonUtils.PLID_PIC, "8090"), 1000, TimeUnit.MILLISECONDS
+*/
             )
                     .stream()
                     .map(future -> {

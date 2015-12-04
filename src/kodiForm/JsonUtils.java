@@ -27,7 +27,9 @@ class JsonUtils {
     public static String HTTP_PORT = "";
     public static final String PLID_MOV = "1";
     public static final String PLID_PIC = "2";
-    public static final String JSON_FULLSCREEN = "{\"id\":$id,\"jsonrpc\":2.0,\"method\":\"GUI.SetFullscreen\",\"params\":{\"fullscreen\":true}}";
+    public static final String JSON_FULLSCREEN = "{\"jsonrpc\":\"2.0\",\"method\":\"GUI.SetFullscreen\",\"params\":{\"fullscreen\":true}, \"id\":$id}";
+    //"{\"jsonrpc\":2.0,\"method\":\"GUI.SetFullscreen\",\"params\":{\"fullscreen\":true},\"id\":$id}";
+    public static final String JSON_GETACTIVE = "{\"id\":$id, \"jsonrpc\": \"2.0\", \"method\": \"Player.GetActivePlayers\"}";
     public static final String JSON_PL_STATUS = "{\"id\":$id,\"jsonrpc\":\"2.0\",\"method\":\"Player.GetItem\",\"params\":{\"playerid\":$PLID}}";
     public static final String JSON_STOP = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Player.Stop\",\"params\":{\"playerid\":$PLID}}";
     public static final String JSON_PL_CLEAR = "{\"id\":1,\"jsonrpc\":\"2.0\",\"method\":\"Playlist.Clear\",\"params\":{\"playlistid\":$PLID}}";

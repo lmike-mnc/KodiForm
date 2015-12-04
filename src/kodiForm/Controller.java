@@ -271,7 +271,7 @@ public class Controller implements Initializable {
         List<Callable<String>> callables = getSelectedDev().stream()
                 .filter(d -> !(d.getDevResource().isEmpty() || d.getDevURI().isEmpty()))
                 .map(d -> {
-                    String sResources = d.getDevResource();
+                    String sResources = d.getDevResource().replace("\\", "/");
                     String saddr = null;
                     Callable<String> ret = null;
                     try {
@@ -363,7 +363,34 @@ public class Controller implements Initializable {
         synchronized (executor) {
             try {
                 res = executor.invokeAll(callables
-                        //, 1000, TimeUnit.MILLISECONDS
+//                        , timeout[0], TimeUnit.MILLISECONDS
+                )
+                        .stream()
+                        .map(future -> {
+                            try {
+                                return future.get();
+                            } catch (InterruptedException | ExecutionException e) {
+                                future.cancel(true);
+                                return "Interrupted";
+                            }
+                        })
+                        .collect(Collectors.toList());
+                res.stream().filter(ret -> ret != null).forEach(ret -> {
+                    if (ret != null) ctlMsg.appendText(ret);
+                });
+            } catch (InterruptedException e) {
+                //e.printStackTrace();
+            }
+        }
+        return res;
+    }
+
+    private synchronized List<String> execInPool(List<Callable<String>> callables, int timeout) {
+        List<String> res = null;
+        synchronized (executor) {
+            try {
+                res = executor.invokeAll(callables
+                        , timeout, TimeUnit.MILLISECONDS
                 )
                         .stream()
                         .map(future -> {
@@ -406,7 +433,7 @@ public class Controller implements Initializable {
 
                     return ret;
                 }).collect(Collectors.toList());
-        execInPool(callables);
+        execInPool(callables, 1000);
     }
 
     @FXML
@@ -426,15 +453,25 @@ public class Controller implements Initializable {
 
     @FXML
     void reboot() {
-        getSelectedDev().forEach(d -> {
-                    try {
-                        String res = new SshJClient().launch(d.getDevURI(), SshJClient.CMD_REBOOT, Main.DEF_USER);
-                        LOG.info("Result:{}", res);
-                    } catch (IOException e) {
-                        LOG.error("IO error!", e);//.printStackTrace();
-                    }
-                }
-        );
+        //getSelectedDev().forEach(d -> {
+        List<Callable<String>> callables = getSelectedDev().stream()
+                .filter(d -> !d.getDevURI().isEmpty())
+                .map(d -> {
+                            Callable<String> ret = null;
+                            ret = () -> {
+                                String res = "";
+                                try {
+                                    res = new SshJClient().launch(d.getDevURI(), SshJClient.CMD_REBOOT, Main.DEF_USER);
+                                    LOG.info("Result:{}", res);
+                                } catch (IOException e) {
+                                    LOG.error("IO error!", e);//.printStackTrace();
+                                }
+                                return res;
+                            };
+                            return ret;
+                        }
+                ).collect(Collectors.toList());
+        execInPool(callables);
     }
 
     @FXML
@@ -462,7 +499,9 @@ public class Controller implements Initializable {
                             .callableRequest(d.getDevURI() + ((JsonUtils.HTTP_PORT.length() > 0) ? (":" + JsonUtils.HTTP_PORT) : "")
                                     , Launcher.HTTP_PROTO
                                     , Launcher.JSONRPC
-                                    , JsonUtils.JSON_PL_STATUS.replace("$id", "1").replace("$PLID", plid));
+                                    , Arrays.asList(JsonUtils.JSON_PL_STATUS.replace("$id", "1").replace("$PLID", plid),
+                                            JsonUtils.JSON_GETACTIVE.replace("$id", "2")
+                                    ).toString());
 
                     return ret;
                 }).collect(Collectors.toList());
@@ -673,6 +712,7 @@ public class Controller implements Initializable {
                     //launch result processing
                     LOG.info("Waiting for processing...");
                     listener.checkSsh();
+                    loadOverDeviceResources();
                     //enable selection after checking
 //                    ctlDevices.setSelectionModel(defmode);
                     LOG.info("Timeout Scan {} ms...", TIMEOUT_SCAN);
@@ -696,6 +736,14 @@ public class Controller implements Initializable {
                 .forEach(d -> {
                     list.add(new Device(d, "", savedResources.get(d, "")));
                 });
+    }
+
+    private void loadOverDeviceResources() {
+        ObservableList<Device> list = mainApp.getDeviceData();
+        list.forEach(d -> {
+            String s = savedResources.get(d.getDevName(), "");
+            if (!s.isEmpty() && d.getDevResource().isEmpty()) d.setDevResource(s);
+        });
     }
 
     /**

@@ -367,6 +367,7 @@ public class Controller implements Initializable {
 
     private synchronized List<String> execInPool(List<Callable<String>> callables) {
         if (thLaunch != null) thLaunch.interrupt();
+        ctlProgress.setProgress(-1);
         thLaunch = new Thread(() -> {
             List<String> res = null;
             List<Future<String>> tasks = null;
@@ -381,6 +382,8 @@ public class Controller implements Initializable {
                                     return future.get();
                                 } catch (InterruptedException | ExecutionException | CancellationException e) {
                                     future.cancel(true);
+                                    http:
+//stackoverflow.com/a/29450825
                                     Platform.runLater(() -> ctlMsg.appendText("*Thread's been canceled in pool\n"));
                                     return "Interrupted";
                                 }
@@ -389,7 +392,7 @@ public class Controller implements Initializable {
                     res.stream()
                             .filter(r -> r != null)
                             .forEach(r -> {
-                                if (r != null) Platform.runLater(() -> ctlMsg.appendText(r + "\n"));
+                                if (r != null) ctlMsg.appendText(r + "\n");
                             });
                 } catch (InterruptedException e) {
                     //e.printStackTrace();
@@ -398,6 +401,8 @@ public class Controller implements Initializable {
                 if (tasks != null) {
                     tasks.forEach(t -> t.cancel(true));
                 }
+                //http://stackoverflow.com/a/29450825
+                Platform.runLater(() -> ctlProgress.setProgress(0));
             }
         });
         thLaunch.start();
@@ -421,6 +426,8 @@ public class Controller implements Initializable {
                                     return future.get();
                                 } catch (InterruptedException | ExecutionException | CancellationException e) {
                                     future.cancel(true);
+                                    http:
+//stackoverflow.com/a/29450825
                                     Platform.runLater(() -> ctlMsg.appendText("*Thread's been canceled in pool\n"));
                                     return "Interrupted";
                                 }
@@ -438,6 +445,7 @@ public class Controller implements Initializable {
                 if (tasks != null) {
                     tasks.forEach(t -> t.cancel(true));
                 }
+                //http://stackoverflow.com/a/29450825
                 Platform.runLater(() -> ctlProgress.setProgress(0));
             }
         });

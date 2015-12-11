@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?language javascript?>
-
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+
 <TabPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity"
          prefHeight="650.0" prefWidth="802.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8"
          xmlns:fx="http://javafx.com/fxml/1" fx:controller="kodiForm.Controller">
@@ -100,6 +102,10 @@
                                                                 onAction="#check" prefHeight="25.0" prefWidth="61.0"
                                                                 text="Check" AnchorPane.bottomAnchor="6.0"
                                                                 AnchorPane.leftAnchor="344.0"/>
+                                                        <ProgressBar id="ctlProgress" fx:id="ctlProgress" layoutX="18.0"
+                                                                     layoutY="348.0" prefWidth="200.0" progress="0.0"
+                                                                     AnchorPane.bottomAnchor="8.0"
+                                                                     AnchorPane.leftAnchor="18.0"/>
                                                     </children>
                                                 </AnchorPane>
                                                 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity"

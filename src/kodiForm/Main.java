@@ -19,6 +19,7 @@ import static kodiForm.FtpUtils.*;
 
 public class Main extends Application {
     private static final Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
+    private static final int TIMEOUT_EXIT = 2000;
     public static String DEF_USER = "root";
     public static String FTP_PORT = "1680";//CarbonCopy port - often it's free and not blocked (on Windows)
     private final ObservableList<Device> deviceData = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
@@ -56,6 +57,8 @@ public class Main extends Application {
         SshJClient.STORAGE_SSH = userPrefs.get("ssh.storage", "");
         SshJClient.KODI_FILTER = userPrefs.get("ssh.kodifilter", "(?i)castrol-[0-9]+");//"(?i)ub1-[0-9]+");//"(?i)castrol-[0-9]+");//"(?i)ubsrv[0-9]+");
         JsonUtils.HTTP_PORT = userPrefs.get("http.port", "");
+        Controller.TIMEOUT_HTTP = userPrefs.getInt("http.timeout", 5000);
+        Controller.TIMEOUT_SSH = userPrefs.getInt("ssh.timeout", 5000);
         FTP_PORT = userPrefs.get("ftp.port", "1680");
 
         LOG.info(String.format("Window Width: %s, Height %s", String.valueOf(w), String.valueOf(h)));
@@ -83,19 +86,20 @@ public class Main extends Application {
     }
 
     @Override
-    public void stop() throws InterruptedException {
+    public void stop() {
         LOG.info("Stoping application...");
         Preferences userPrefs = Preferences.userNodeForPackage(getClass());
         userPrefs.putDouble("stage.x", primaryStage.getX());
         userPrefs.putDouble("stage.y", primaryStage.getY());
         userPrefs.putDouble("stage.width", primaryStage.getWidth());
         userPrefs.putDouble("stage.height", primaryStage.getHeight());
+        LOG.info(String.format("Width: %s, Height %s", String.valueOf(primaryStage.getWidth()), String.valueOf(primaryStage.getHeight())));
         userPrefs.put("ssh.storage", SshJClient.STORAGE_SSH);
         userPrefs.put("ssh.kodifilter", SshJClient.KODI_FILTER);
         userPrefs.put("http.port", JsonUtils.HTTP_PORT);
         userPrefs.put("ftp.port", FTP_PORT);
-
-        LOG.info(String.format("Width: %s, Height %s", String.valueOf(primaryStage.getWidth()), String.valueOf(primaryStage.getHeight())));
+        userPrefs.putInt("http.timeout", Controller.TIMEOUT_HTTP);
+        userPrefs.putInt("ssh.timeout", Controller.TIMEOUT_SSH);
     }
 
 /*
@@ -140,6 +144,9 @@ public class Main extends Application {
 */
             if (controller != null) controller.closeUtilThreads();
             controller = null;
+            LOG.info("Waiting {}ms ...", TIMEOUT_EXIT);
+            Thread.sleep(TIMEOUT_EXIT);
+            System.exit(0);
         }
     }
 

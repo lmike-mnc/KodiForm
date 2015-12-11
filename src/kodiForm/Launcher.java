@@ -29,8 +29,11 @@ class Launcher {
 
     static Callable<String> callableRequest(String host, String protocol, String url, String data) {
         return () -> {
-            String res = null;
-            return JsonUtils.postRequest(host, protocol, url, data);
+            try {
+                return JsonUtils.postRequest(host, protocol, url, data);
+            } catch (CancellationException e) {
+                return "request's been canceled";
+            }
         };
     }
 

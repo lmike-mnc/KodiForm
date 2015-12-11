@@ -1,5 +1,6 @@
 package kodiForm;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -24,7 +25,8 @@ import java.util.stream.Collectors;
 public class Controller implements Initializable {
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(new Throwable().getStackTrace()[0].getClassName());
 
-    private static final long TIMEOUT_SSH = 5000;//timeout for ssh checking threads (service.submit())
+    public static int TIMEOUT_SSH = 5000;//timeout for ssh checking threads (service.submit())
+    public static int TIMEOUT_HTTP = 5000;//timeout for http (json) request command
     private static final String SEP_PATH = ";";
     private static final FileChooser.ExtensionFilter imgFilter = new FileChooser.ExtensionFilter("Images", "*.PNG", "*.png", "*.JPG", "*.jpg");
     private static final FileChooser.ExtensionFilter movFilter = new FileChooser.ExtensionFilter("Movies", "*.AVI", "*.avi", "*.M4V", "*.m4v");
@@ -71,6 +73,8 @@ public class Controller implements Initializable {
     private TableColumn<Resource, String> colResourceOrg;
     @FXML
     private TextArea ctlMsg;
+    @FXML
+    private ProgressBar ctlProgress;
 
     private TableView.TableViewSelectionModel defmode;
 
@@ -95,6 +99,7 @@ public class Controller implements Initializable {
     private UpnpService upnpService;
     private Runnable scanTask;
     private final ExecutorService executor = Executors.newCachedThreadPool();
+    private final ExecutorService sshexecutor = Executors.newCachedThreadPool();
 //https://docs.oracle.com/javase/tutorial/collections/implementations/wrapper.html
 
     @Override
@@ -113,8 +118,8 @@ public class Controller implements Initializable {
         ctlResources.getSelectionModel().setSelectionMode(javafx.scene.control.SelectionMode.MULTIPLE);
         colResourceOrg.setCellValueFactory(cellData -> cellData.getValue().resourceProperty());
         chkPlayList.setSelected(true);
-
         ctlMsg.appendText(Main.getWorkingkdir() + "\n");
+        ctlMsg.appendText(String.format("FTP port: %s", Main.FTP_PORT));
     }
 
     private void openFile(File file) {
@@ -241,6 +246,7 @@ public class Controller implements Initializable {
         ArrayList<String> list = getSelectedResString();
         if (devices.size() == 0 || list.size() == 0) {
             alertInfo("Wrong selection", "You have to select devices\nand corresponding resources");
+            return;
         }
         devices
                 .stream()
@@ -281,6 +287,7 @@ public class Controller implements Initializable {
                         String resURI = Launcher.FTP_URI + saddr + ":" + Main.FTP_PORT;
 
                         LOG.info("accessible address:{}", saddr);
+                        ctlMsg.appendText(String.format("dev:%s\nres:%s\n", saddr, d.getDevResource()));
                         String plid = sResources.matches(MOV_MATCHES) ? JsonUtils.PLID_MOV : JsonUtils.PLID_PIC;
                         //play directory or playlist
                         if (!sResources.matches(PL_MATCHES)) {
@@ -323,7 +330,7 @@ public class Controller implements Initializable {
             ctlMsg.appendText(s + "\n");
         }
 */
-        execInPool(callables);
+        execInPool(callables, TIMEOUT_HTTP);
     }
 
     void playJson(String json, String[][] replacement) {
@@ -359,57 +366,83 @@ public class Controller implements Initializable {
     }
 
     private synchronized List<String> execInPool(List<Callable<String>> callables) {
-        List<String> res = null;
-        synchronized (executor) {
-            try {
-                res = executor.invokeAll(callables
-//                        , timeout[0], TimeUnit.MILLISECONDS
-                )
-                        .stream()
-                        .map(future -> {
-                            try {
-                                return future.get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                future.cancel(true);
-                                return "Interrupted";
-                            }
-                        })
-                        .collect(Collectors.toList());
-                res.stream().filter(ret -> ret != null).forEach(ret -> {
-                    if (ret != null) ctlMsg.appendText(ret);
-                });
-            } catch (InterruptedException e) {
-                //e.printStackTrace();
+        if (thLaunch != null) thLaunch.interrupt();
+        thLaunch = new Thread(() -> {
+            List<String> res = null;
+            List<Future<String>> tasks = null;
+            synchronized (executor) {
+                try {
+                    tasks = executor.invokeAll(callables
+//                            , timeout, TimeUnit.MILLISECONDS
+                    );
+                    res = tasks.stream()
+                            .map(future -> {
+                                try {
+                                    return future.get();
+                                } catch (InterruptedException | ExecutionException | CancellationException e) {
+                                    future.cancel(true);
+                                    Platform.runLater(() -> ctlMsg.appendText("*Thread's been canceled in pool\n"));
+                                    return "Interrupted";
+                                }
+                            })
+                            .collect(Collectors.toList());
+                    res.stream()
+                            .filter(r -> r != null)
+                            .forEach(r -> {
+                                if (r != null) Platform.runLater(() -> ctlMsg.appendText(r + "\n"));
+                            });
+                } catch (InterruptedException e) {
+                    //e.printStackTrace();
+                    Platform.runLater(() -> ctlMsg.appendText("*Thread's been interrupted"));
+                }
+                if (tasks != null) {
+                    tasks.forEach(t -> t.cancel(true));
+                }
             }
-        }
-        return res;
+        });
+        thLaunch.start();
+        return null;
     }
 
     private synchronized List<String> execInPool(List<Callable<String>> callables, int timeout) {
-        List<String> res = null;
-        synchronized (executor) {
-            try {
-                res = executor.invokeAll(callables
-                        , timeout, TimeUnit.MILLISECONDS
-                )
-                        .stream()
-                        .map(future -> {
-                            try {
-                                return future.get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                future.cancel(true);
-                                return "Interrupted";
-                            }
-                        })
-                        .collect(Collectors.toList());
-                res.stream().filter(ret -> ret != null).forEach(ret -> {
-                    if (ret != null) ctlMsg.appendText(ret);
-                });
-            } catch (InterruptedException e) {
-                //e.printStackTrace();
+        if (thLaunch != null) thLaunch.interrupt();
+        ctlProgress.setProgress(-1);
+        thLaunch = new Thread(() -> {
+            List<String> res = null;
+            List<Future<String>> tasks = null;
+            synchronized (executor) {
+                try {
+                    tasks = executor.invokeAll(callables
+                            , timeout, TimeUnit.MILLISECONDS
+                    );
+                    res = tasks.stream()
+                            .map(future -> {
+                                try {
+                                    return future.get();
+                                } catch (InterruptedException | ExecutionException | CancellationException e) {
+                                    future.cancel(true);
+                                    Platform.runLater(() -> ctlMsg.appendText("*Thread's been canceled in pool\n"));
+                                    return "Interrupted";
+                                }
+                            })
+                            .collect(Collectors.toList());
+                    res.stream()
+                            .filter(r -> r != null)
+                            .forEach(r -> {
+                                if (r != null) ctlMsg.appendText(r + "\n");
+                            });
+                } catch (InterruptedException e) {
+                    //e.printStackTrace();
+                    Platform.runLater(() -> ctlMsg.appendText("*Thread's been interrupted"));
+                }
+                if (tasks != null) {
+                    tasks.forEach(t -> t.cancel(true));
+                }
+                Platform.runLater(() -> ctlProgress.setProgress(0));
             }
-        }
-        return res;
+        });
+        thLaunch.start();
+        return null;
     }
 
     @FXML
@@ -433,7 +466,7 @@ public class Controller implements Initializable {
 
                     return ret;
                 }).collect(Collectors.toList());
-        execInPool(callables, 1000);
+        execInPool(callables, 5000);
     }
 
     @FXML
@@ -471,7 +504,7 @@ public class Controller implements Initializable {
                             return ret;
                         }
                 ).collect(Collectors.toList());
-        execInPool(callables);
+        execInPool(callables, 5000);
     }
 
     @FXML
@@ -505,7 +538,7 @@ public class Controller implements Initializable {
 
                     return ret;
                 }).collect(Collectors.toList());
-        List<String> res = execInPool(callables);
+        List<String> res = execInPool(callables, 5000);
         //if (res!=null){}
 
     }
@@ -756,8 +789,10 @@ public class Controller implements Initializable {
             scanTask = null;
         }
         ping.removeFromBroker(listener);
+        sshexecutor.shutdownNow();
         executor.shutdownNow();
         serviceSch.shutdownNow();
+        if (thLaunch != null) thLaunch.interrupt();
         if (thPing != null) thPing.interrupt();
         if (upnpService != null) upnpService.shutdown();
     }
